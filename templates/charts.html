@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+    <div class="button-group" style="text-align:center; margin-bottom:20px;">
+        <button id="btn-simple">Simple</button>
+        <button id="btn-trader">Trader</button>
+        <button id="btn-pro">Pro</button>
+    </div>
+    <h1>Bitcoin Price (Last 7 Days)</h1>
+    <div style="position: relative; height:400px; width:100%;">
+        <canvas id="myChart"></canvas>
+    </div>
+    <p><a href="/profile">← Back to Profile</a></p>
+</div>
+<script>
+    const ctx = document.getElementById('myChart').getContext('2d');
+    let chart;
+
+    function generateData(mode) {
+        const now = new Date();
+        let labels = [], prices = [];
+        let price = 50000;
+
+        if (mode === 'simple') {
+            // daily for last 7 days
+            const days = 7;
+            for (let i = days - 1; i >= 0; i--) {
+                const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                labels.push(d.toISOString().slice(0, 10));
+                price += (Math.random() - 0.5) * 2000;
+                prices.push(Math.round(price * 100) / 100);
+            }
+        } else if (mode === 'trader') {
+            // hourly for last 7 days
+            const hours = 24 * 7;
+            for (let i = hours - 1; i >= 0; i--) {
+                const d = new Date(now.getTime() - i * 60 * 60 * 1000);
+                labels.push(d.toISOString().slice(0, 16).replace('T', ' '));
+                price += (Math.random() - 0.5) * 1000;
+                prices.push(Math.round(price * 100) / 100);
+            }
+        } else if (mode === 'pro') {
+            // hourly for last year (~365 days)
+            const hours = 24 * 365;
+            for (let i = hours - 1; i >= 0; i--) {
+                const d = new Date(now.getTime() - i * 60 * 60 * 1000);
+                labels.push(d.toISOString().slice(0, 16).replace('T', ' '));
+                price += (Math.random() - 0.5) * 500;
+                prices.push(Math.round(price * 100) / 100);
+            }
+        }
+
+        return {labels, prices};
+    }
+
+    function updateChart(mode) {
+        const {labels, prices} = generateData(mode);
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = prices;
+        chart.options.plugins.title.text = `Bitcoin Price (${mode.charAt(0).toUpperCase() + mode.slice(1)})`;
+        chart.update();
+    }
+
+    document.getElementById('btn-simple').addEventListener('click', () => updateChart('simple'));
+    document.getElementById('btn-trader').addEventListener('click', () => updateChart('trader'));
+    document.getElementById('btn-pro').addEventListener('click', () => updateChart('pro'));
+
+    // initialize with trader view
+    (function () {
+        const initialMode = 'trader';
+        const {labels, prices} = generateData(initialMode);
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(54, 162, 235, 0.5)');
+        gradient.addColorStop(1, 'rgba(54, 162, 235, 0)');
+
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: `Bitcoin Price (${initialMode})`,
+                    data: prices,
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {display: true, text: `Bitcoin Price (${initialMode})`, font: {size: 20}},
+                    legend: {display: true, position: 'bottom'},
+                    tooltip: {mode: 'index', intersect: false}
+                },
+                scales: {
+                    x: {title: {display: true, text: 'Time'}, ticks: {autoSkip: true, maxTicksLimit: 10}},
+                    y: {title: {display: true, text: 'Price (USD)'}, beginAtZero: false}
+                }
+            }
+        });
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="utf-8">
+    <title>Log In</title>
+</head>
+<body>
+<div class="container">
+    <h1>Log In</h1>
+    <form method="POST" action="/login">
+        <label>Username: <input name="username" required></label><br>
+        <label>Password: <input type="password" name="password" required></label><br>
+        <button type="submit">Log In</button>
+    </form>
+    <p>New here? <a href="/signup">Sign Up</a></p>
+</div>
+</body>
+</html>
